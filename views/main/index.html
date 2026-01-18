@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="night">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doorprize System</title>
+    
+    <!-- Tailwind CSS & DaisyUI CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.7.2/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- Tailwind Config (Ditaruh di Head agar style langsung terbaca) -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: {
+                        brand: { black: '#050505', purple: '#7c3aed', yellow: '#facc15' }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #050505;
+            background-image: radial-gradient(circle at center, #1a1a2e 0%, #000000 100%);
+            overflow: hidden;
+            color: white;
+        }
+
+        /* Styling Khusus Hadiah agar menonjol */
+        .prize-text-glow {
+            text-shadow: 0 0 20px rgba(250, 204, 21, 0.6), 0 0 10px rgba(250, 204, 21, 0.4);
+        }
+
+        /* Animasi Spinner */
+        .spin-active {
+            animation: pulse 0.1s infinite;
+        }
+
+        /* Animasi konfeti sederhana */
+        @keyframes confetti {
+            0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+        .confetti-piece {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #facc15;
+            top: -10px;
+            z-index: 50;
+            animation: confetti 3s linear forwards;
+        }
+    </style>
+</head>
+<body class="h-screen flex flex-col items-center justify-center relative">
+
+    <!-- ================= WARNING MOBILE ================= -->
+    <div class="block md:hidden absolute inset-0 z-[100] bg-black flex flex-col items-center justify-center text-center p-6">
+        <i class="fa-solid fa-mobile-screen-button text-6xl text-brand-purple mb-6"></i>
+        <h2 class="text-3xl font-extrabold text-white mb-2">Screen Too Small</h2>
+        <p class="text-gray-400 text-lg leading-relaxed">
+            For the best experience,<br>
+            please use a <span class="text-brand-yellow font-bold">Tablet</span> or <span class="text-brand-yellow font-bold">Desktop</span> screen.
+        </p>
+        <button onclick="window.location.reload()" class="btn btn-sm btn-ghost text-white mt-8">
+            <i class="fa-solid fa-rotate-right mr-2"></i> Refresh Page
+        </button>
+    </div>
+
+    <!-- ================= KONTEN UTAMA ================= -->
+    <div class="hidden md:block w-full h-full relative">
+        
+        <!-- AUDIO ELEMENTS -->
+        <audio id="audio-tension" src="https://assets.mixkit.co/active_storage/sfx/2577/2577-preview.mp3" loop></audio>
+        <audio id="audio-win" src="https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3"></audio>
+
+        <!-- STAGE UTAMA -->
+        <main class="h-full w-full flex flex-col justify-between relative z-10 px-4">
+            
+            <!-- BAGIAN ATAS: Header & Info Hadiah -->
+            <div class="flex flex-col items-center justify-center pt-6 pb-4">
+                
+                <!-- TOMBOL FULLSCREEN (POJOK KIRI ATAS) -->
+                <button onclick="toggleFullScreen()" class="absolute top-6 left-6 btn btn-circle btn-ghost text-white/70 hover:text-white hover:bg-white/10 z-50 transition-all duration-300" title="Toggle Fullscreen">
+                    <i class="fa-solid fa-expand text-xl"></i>
+                </button>
+
+                <!-- Header Wrapper (Judul Sederhana & Bersih) -->
+                <div class="flex justify-between w-full max-w-6xl items-center mb-4 px-2">
+                    
+                    <!-- Kiri: Branding Sederhana -->
+                    <div class="flex items-center gap-4">
+                        <!-- Judul Utama -->
+                        <div class="flex flex-col">
+                            <span class="text-3xl font-black text-white tracking-tight leading-none">
+                                <i class="fa-solid fa-gift text-brand-yellow mr-2"></i>Doorprize System
+                            </span>
+                            <span class="text-sm text-gray-500 font-medium tracking-widest mt-1 uppercase">Interactive Randomizer</span>
+                        </div>
+                    </div>
+
+                    <!-- Kanan: Tombol Home (Icon Only, External Link) -->
+                    <a href="https://maslimi.web.id" target="_blank" class="btn btn-circle btn-ghost text-white border border-white/20 hover:bg-white/10" title="Go Home">
+                        <i class="fa-solid fa-house text-lg"></i>
+                    </a>
+                </div>
+
+                <!-- 1. AREA HADIAH -->
+                <div id="prize-area" class="mb-2 transition-all duration-500 opacity-0 transform translate-y-4 text-center">
+                    <div class="inline-block relative">
+                        <i class="fa-solid fa-crown absolute -top-10 -left-4 text-brand-yellow text-3xl animate-bounce"></i>
+                        <h1 id="prize-name-display" class="text-3xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-b from-yellow-300 to-yellow-600 prize-text-glow break-words max-w-4xl">
+                            PRIZE HERE
+                        </h1>
+                    </div>
+                </div>
+
+                <!-- 2. AREA KUOTA -->
+                <div id="quota-area" class="mb-6 opacity-0 transition-opacity duration-500">
+                    <div class="badge badge-lg bg-brand-purple border-none text-white px-6 py-3 shadow-lg">
+                        <i class="fa-solid fa-ticket mr-2 text-brand-yellow"></i> 
+                        <span id="quota-display" class="font-bold text-2xl text-brand-yellow mx-2">0</span> Winners Remaining
+                    </div>
+                </div>
+            </div>
+
+            <!-- BAGIAN TENGAH: NAMA PENGACAKAN -->
+            <div class="flex-1 flex items-center justify-center w-full relative">
+                <!-- Background Glow -->
+                <div class="absolute inset-0 bg-brand-purple blur-[100px] opacity-20 rounded-full scale-125"></div>
+                
+                <h1 id="display-name" class="text-5xl md:text-8xl lg:text-9xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-gray-600 neon-text min-h-[120px] transition-all duration-100 leading-[1] z-20">
+                    XXXXX
+                </h1>
+            </div>
+
+            <!-- BAGIAN BAWAH: TOMBOL KONTROL -->
+            <div class="flex flex-col items-center gap-4 pb-12 pt-4">
+                <button id="btn-spin" onclick="handleSpin()" class="btn btn-wide btn-lg bg-white text-black hover:bg-gray-200 border-none font-bold text-xl shadow-[0_0_40px_rgba(255,255,255,0.3)] hover:scale-105 transition-transform z-20">
+                    <i class="fa-solid fa-play mr-2"></i> SPIN NOW
+                </button>
+                
+                <!-- Credit Text -->
+                <div class="text-center mt-1">
+                    <span class="text-sm text-gray-500 font-medium">
+                        Powered by <a href="https://maslimi.web.id" target="_blank" class="text-brand-yellow hover:text-white transition-colors duration-200 underline decoration-dotted">MasLimi</a> - 
+                        <a href="https://railway.com" target="_blank" class="hover:text-white transition-colors duration-200 underline decoration-dotted">Deploy your own on Railway</a>
+                    </span>
+                </div>
+            </div>
+        </main>
+
+        <!-- FAB SETTINGS -->
+        <button onclick="modal_settings.showModal()" class="fixed bottom-8 right-8 btn btn-circle bg-brand-purple hover:bg-purple-600 text-white shadow-xl z-50 border-none group">
+            <i class="fa-solid fa-gear text-xl group-hover:rotate-90 transition-transform duration-500"></i>
+        </button>
+    </div>
+
+    <!-- ================= MODALS ================= -->
+
+    <!-- 1. Settings Modal (FULLSCREEN) -->
+    <dialog id="modal_settings" class="modal modal-fullscreen">
+        <div class="modal-box bg-[#111] w-full h-full max-w-none rounded-none border-none flex flex-col text-white">
+            
+            <!-- Header Modal Settings -->
+            <div class="flex justify-between items-center border-b border-gray-800 pb-6 mb-8">
+                <h3 class="font-bold text-3xl text-brand-yellow"><i class="fa-solid fa-sliders mr-3"></i> Doorprize Settings</h3>
+                <form method="dialog">
+                    <button class="btn btn-circle btn-ghost text-white hover:bg-white/10">
+                        <i class="fa-solid fa-xmark text-2xl"></i>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Konten Modal Settings (Scrollable) -->
+            <div class="flex-grow overflow-y-auto px-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-7xl mx-auto">
+                    
+                    <!-- Kolom Kiri: Hadiah -->
+                    <div class="border border-gray-800 p-8 rounded-xl bg-black/50 shadow-xl">
+                        <h4 class="font-bold mb-6 border-b border-gray-700 pb-4 text-2xl text-brand-yellow">1. Set Prize</h4>
+                        
+                        <div class="form-control mb-6">
+                            <label class="label"><span class="label-text text-gray-400 text-lg">Prize Name:</span></label>
+                            <input type="text" id="input-prize-name" placeholder="Example: Folding Bike Polygon" class="input input-bordered w-full bg-black text-white focus:border-brand-yellow text-lg" />
+                        </div>
+
+                        <div class="form-control mb-6">
+                            <label class="label"><span class="label-text text-gray-400 text-lg">Winner Quota:</span></label>
+                            <input type="number" id="input-quota" min="1" value="1" class="input input-bordered w-full bg-black text-white focus:border-brand-yellow text-lg" />
+                        </div>
+
+                        <div class="alert alert-info shadow-lg mt-4 bg-blue-900/20 border-blue-800 text-blue-200 py-4 text-sm">
+                            <i class="fa-solid fa-info text-xl"></i>
+                            <span>If you check a name, the system will take the order from the names you choose (Manual).</span>
+                        </div>
+                    </div>
+
+                    <!-- Kolom Kanan: Peserta -->
+                    <div class="border border-gray-800 p-8 rounded-xl bg-black/50 shadow-xl flex flex-col">
+                        <h4 class="font-bold mb-6 border-b border-gray-700 pb-4 text-2xl text-brand-yellow">2. Participants List</h4>
+                        
+                        <!-- Tambah Peserta -->
+                        <div class="flex gap-2 mb-6">
+                            <input type="text" id="input-new-participant" placeholder="Participant Name..." class="input input-bordered w-full bg-black text-white text-lg" onkeypress="handleEnterParticipant(event)" />
+                            <button onclick="addParticipant()" class="btn btn-lg bg-brand-yellow text-black hover:bg-yellow-400 border-none font-bold px-6">
+                                <i class="fa-solid fa-plus"></i>
+                            </button>
+                        </div>
+
+                        <!-- List Checkbox -->
+                        <div class="flex-grow overflow-y-auto bg-[#0a0a0a] p-4 rounded-lg border border-gray-800 custom-scroll">
+                            <p class="text-sm text-gray-500 mb-4 px-2 italic">
+                                * Check name to select manual winner (sequential),<br>
+                                or leave empty for <strong class="text-white">AUTOMATIC RANDOM</strong>.
+                            </p>
+                            <div id="participant-list-container" class="flex flex-col gap-2">
+                                <!-- List Checkbox diisi JS -->
+                                <div class="text-center text-white text-lg mt-20 font-light">No participants yet.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Modal Settings -->
+            <div class="mt-8 pt-6 border-t border-gray-800 flex justify-between items-center px-4 bg-black/20">
+                <div class="text-gray-500 text-sm hidden md:block">
+                    <i class="fa-solid fa-keyboard mr-2"></i> Press Enter to add name quickly.
+                </div>
+                <div class="flex gap-4 ml-auto">
+                    <form method="dialog">
+                        <button class="btn btn-lg text-white">Close</button>
+                    </form>
+                    <button class="btn btn-lg btn-warning text-black font-bold shadow-[0_0_20px_rgba(250,204,21,0.3)]" onclick="saveSettings()">
+                        <i class="fa-solid fa-check mr-2"></i> Save & Start
+                    </button>
+                </div>
+            </div>
+        </div>
+        <form method="dialog" class="modal-backdrop bg-black/95">
+            <button>close</button>
+        </form>
+    </dialog>
+
+    <!-- 2. Warning/Alert Modal (Custom Alert) -->
+    <dialog id="modal_alert" class="modal modal-bottom sm:modal-middle">
+        <div class="modal-box bg-neutral border-2 border-red-500 shadow-[0_0_50px_rgba(239,68,68,0.3)] max-w-sm text-center">
+            <div class="mb-4 flex justify-center">
+                <div class="text-red-500 text-6xl animate-pulse">
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                </div>
+            </div>
+            <h3 class="font-bold text-xl text-white mb-2">Attention!</h3>
+            <p id="alert-message" class="py-4 text-gray-300 text-lg">Warning message here.</p>
+            <div class="modal-action justify-center mt-4">
+                <form method="dialog">
+                    <button class="btn btn-sm md:btn-md bg-red-600 text-white hover:bg-red-700 border-none">Close</button>
+                </form>
+            </div>
+        </div>
+        <form method="dialog" class="modal-backdrop bg-black/90 backdrop-blur-sm">
+            <button>close</button>
+        </form>
+    </dialog>
+
+    <!-- 3. Winners Modal -->
+    <dialog id="modal_winners" class="modal modal-bottom sm:modal-middle">
+        <div class="modal-box bg-[#111] border border-brand-yellow text-white max-w-lg shadow-[0_0_50px_rgba(250,204,21,0.1)]">
+            <h3 class="font-bold text-3xl text-center text-brand-yellow mb-2">🎉 FINISHED! 🎉</h3>
+            <p class="text-center text-gray-400 mb-6">Winners for prize:</p>
+            
+            <div class="text-center mb-6 bg-black p-4 rounded-lg border border-yellow-900/30">
+                <div class="badge badge-lg badge-primary p-4 text-xl border-none bg-brand-yellow text-black font-black" id="winner-modal-prize-name">Prize Name</div>
+            </div>
+
+            <table class="table w-full text-center mb-6">
+                <tbody id="winner-list-body">
+                    <!-- List Pemenang -->
+                </tbody>
+            </table>
+
+            <div class="modal-action justify-center mt-4 flex-col gap-2">
+                <!-- Tombol Reset -->
+                <button onclick="resetSystem()" class="btn btn-error text-white w-full mb-2">
+                    <i class="fa-solid fa-trash-arrow-up mr-2"></i> RESET SYSTEM (Start from 0)
+                </button>
+                <form method="dialog">
+                    <button class="btn btn-ghost text-white w-full">Close Results</button>
+                </form>
+            </div>
+
+            <!-- FOOTER SEDERHANA -->
+            <div class="mt-8 pt-6 border-t border-gray-800 text-center">
+                <p class="text-gray-600 text-xs">Thank you for using this application.</p>
+            </div>
+        </div>
+        <form method="dialog" class="modal-backdrop bg-black/90">
+            <button>close</button>
+        </form>
+    </dialog>
+
+    <!-- Link ke Javascript External -->
+    <script src="/public/js/script.js"></script>
+</body>
+</html>

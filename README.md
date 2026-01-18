@@ -46,11 +46,6 @@ A professional, instant, and high-performance lucky draw solution. Powered by **
 
 ---
 
-## 📸 Preview / Screenshots
-*(Sertakan screenshot atau GIF aplikasi Anda di sini untuk menarik lebih banyak pengguna)*
-
----
-
 ## ⚙️ Tech Stack
 * **Backend:** Go (Fiber Framework)
 * **Frontend:** HTML5, Tailwind CSS, Alpine.js (for reactivity)

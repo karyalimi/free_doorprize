@@ -1,6 +1,6 @@
 # 🎡 Pro-Event Lucky Draw System (Zero-DB Edition)
 
-[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/new/template?template=https://github.com/[USERNAME_GITHUB]/[NAMA_REPO])
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/new/template?template=https://github.com/karyalimi/free_doorprize)
 
 ---
 

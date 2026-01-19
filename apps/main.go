@@ -16,6 +16,9 @@ func main() {
 
 	//routes
 	app.Static("public", "./public")
+	app.Get("/health", func(c *fiber.Ctx) error {
+		return c.Status(200).SendString("OK")
+	})
 	app.Get("/", func(c *fiber.Ctx) error {
 		return c.Render("main/index", fiber.Map{})
 	})

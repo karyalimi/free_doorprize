@@ -1,7 +1,5 @@
 # 🎡 Pro-Event Lucky Draw System (Zero-DB Edition)
 
-[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/7CVgAe?referralCode=oGZ2pZ&utm_medium=integration&utm_source=template&utm_campaign=generic)
-
 ---
 
 ## 🇮🇩 Bahasa Indonesia
